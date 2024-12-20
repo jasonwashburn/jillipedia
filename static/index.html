@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Search</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <input type="search" 
+                   name="search" 
+                   placeholder="Search videos..."
+                   hx-get="/videos" 
+                   hx-trigger="input changed delay:500ms, load" 
+                   hx-target="#results">
+        </div>
+        <div id="results"></div>
+    </div>
+</body>
+</html> 

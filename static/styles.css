@@ -1,0 +1,103 @@
+* { box-sizing: border-box; }
+
+body { 
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 1rem;
+    background: #f5f5f5;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-container { 
+    position: sticky;
+    top: 0;
+    background: #f5f5f5;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+    z-index: 100;
+}
+
+input[type="search"] { 
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input[type="search"]:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.video-item { 
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.video-item:active {
+    transform: scale(0.98);
+}
+
+.video-item img {
+    width: 120px;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.video-item .content {
+    flex: 1;
+    min-width: 0;
+}
+
+.video-item h3 { 
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.video-item p { 
+    margin: 0 0 0.5rem 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.video-item .episode-info {
+    color: #888;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .video-item {
+        padding: 0.8rem;
+    }
+
+    .video-item img {
+        width: 100px;
+        object-fit: contain;
+    }
+
+    .video-item h3 {
+        font-size: 1.1rem;
+    }
+} 
