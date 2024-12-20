@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	spinhttp "github.com/fermyon/spin/sdk/go/v2/http"
 	"github.com/fermyon/spin/sdk/go/v2/sqlite"
@@ -65,16 +68,86 @@ func normalizeSearchText(text string) string {
 	return text
 }
 
-func searchVideos(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("HX-Request") != "" {
-		w.Header().Set("Content-Type", "text/html")
-	} else {
-		w.Header().Set("Content-Type", "application/json")
+// Add LogLevel type and constants
+type LogLevel int
+
+const (
+	LogLevelDebug LogLevel = iota
+	LogLevelInfo
+	LogLevelError
+)
+
+// Function to get log level from environment
+func getLogLevel() LogLevel {
+	level := os.Getenv("LOG_LEVEL")
+	switch strings.ToUpper(level) {
+	case "DEBUG":
+		return LogLevelDebug
+	case "ERROR":
+		return LogLevelError
+	default:
+		return LogLevelInfo
 	}
+}
+
+// Modify AppLoggers to include level
+type AppLoggers struct {
+	Info  *log.Logger
+	Error *log.Logger
+	Debug *log.Logger
+	level LogLevel
+}
+
+// Update logger creation
+func newLoggers() AppLoggers {
+	level := getLogLevel()
+	return AppLoggers{
+		Info:  log.New(os.Stderr, "INFO: ", log.LstdFlags|log.Lmsgprefix),
+		Error: log.New(os.Stderr, "ERROR: ", log.LstdFlags|log.Lmsgprefix),
+		Debug: log.New(os.Stderr, "DEBUG: ", log.LstdFlags|log.Lmsgprefix),
+		level: level,
+	}
+}
+
+// Add helper methods
+func (l AppLoggers) Debugf(format string, v ...interface{}) {
+	if l.level <= LogLevelDebug {
+		l.Debug.Printf(format, v...)
+	}
+}
+
+func (l AppLoggers) Infof(format string, v ...interface{}) {
+	if l.level <= LogLevelInfo {
+		l.Info.Printf(format, v...)
+	}
+}
+
+func (l AppLoggers) Errorf(format string, v ...interface{}) {
+	if l.level <= LogLevelError {
+		l.Error.Printf(format, v...)
+	}
+}
+
+func init() {
+	router := NewRouter()
+	router.Handle("/", indexHandler)
+	router.Handle("/videos", searchVideos)
+	router.Handle("/track-click", trackClick)
+
+	spinhttp.Handle(router.ServeHTTP)
+}
+
+func searchVideos(w http.ResponseWriter, r *http.Request) {
+	loggers := newLoggers()
+	start := time.Now()
+
 	query := r.URL.Query().Get("search")
 	if query != "" {
+		loggers.Infof("Search request from %s with query: %q", r.RemoteAddr, query)
 		query = normalizeSearchText(query)
+		loggers.Debugf("Normalized search query: %q", query)
 	}
+
 	db := sqlite.Open("default")
 	defer db.Close()
 
@@ -100,6 +173,7 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 		rows, err = db.Query(sqlQuery)
 	}
 	if err != nil {
+		loggers.Errorf("Database error during search: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -158,6 +232,8 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(videos)
+	duration := time.Since(start)
+	loggers.Infof("Search completed in %v, returned %d results", duration, len(videos))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -165,13 +241,17 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func trackClick(w http.ResponseWriter, r *http.Request) {
+	loggers := newLoggers()
+
 	if r.Method != "POST" {
+		loggers.Errorf("Invalid method %s from %s", r.Method, r.RemoteAddr)
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	videoId := r.URL.Query().Get("id")
 	if videoId == "" {
+		loggers.Errorf("Missing video ID in request from %s", r.RemoteAddr)
 		http.Error(w, "Video ID required", http.StatusBadRequest)
 		return
 	}
@@ -179,22 +259,25 @@ func trackClick(w http.ResponseWriter, r *http.Request) {
 	db := sqlite.Open("default")
 	defer db.Close()
 
-	_, err := db.Exec("INSERT INTO clicks (video_id) VALUES (?)", videoId)
+	// First get the video title
+	var title string
+	err := db.QueryRow("SELECT title FROM videos WHERE id = ?", videoId).Scan(&title)
 	if err != nil {
+		loggers.Errorf("Error getting video title for ID %s: %v", videoId, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-}
+	loggers.Infof("Click tracked for video %s (%s) from %s", title, videoId, r.RemoteAddr)
 
-func init() {
-	router := NewRouter()
-	router.Handle("/", indexHandler)
-	router.Handle("/videos", searchVideos)
-	router.Handle("/track-click", trackClick)
+	_, err = db.Exec("INSERT INTO clicks (video_id) VALUES (?)", videoId)
+	if err != nil {
+		loggers.Errorf("Database error tracking click for video %s (%s): %v", title, videoId, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	spinhttp.Handle(router.ServeHTTP)
+	loggers.Debugf("Successfully recorded click for video %s (%s) in database", title, videoId)
 }
 
 func main() {}
