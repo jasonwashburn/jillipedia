@@ -19,18 +19,29 @@
     
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <link rel="stylesheet" href="/static/styles.css">
+    <script>
+        function clearSearch() {
+            const input = document.getElementById('search-input');
+            input.value = '';
+            input.dispatchEvent(new Event('input'));
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="search-container">
             <input type="search" 
+                   id="search-input"
                    name="search" 
                    placeholder="Search videos..."
                    hx-get="/videos" 
                    hx-trigger="input changed delay:500ms, load" 
                    hx-target="#results">
+            <button onclick="clearSearch()" class="clear-button" title="Clear search">
+                <img src="/static/reload_icon.svg" width="16" height="16" alt="Clear">
+            </button>
         </div>
         <div id="results"></div>
     </div>
 </body>
-</html> 
+</html>
