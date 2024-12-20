@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Search</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .search-container {
+            margin-bottom: 2rem;
+        }
+        input[type="search"] {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1.1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .video-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .video-item h3 {
+            margin: 0 0 0.5rem 0;
+        }
+        .video-item p {
+            margin: 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input type="search" 
+               name="search" 
+               placeholder="Search videos..."
+               hx-get="/videos"
+               hx-trigger="input changed delay:500ms, load"
+               hx-target="#results">
+    </div>
+    <div id="results">
+        <!-- Results will be populated here -->
+    </div>
+</body>
+</html> 
