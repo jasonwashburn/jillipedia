@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	spinhttp "github.com/fermyon/spin/sdk/go/v2/http"
 	"github.com/fermyon/spin/sdk/go/v2/sqlite"
@@ -48,6 +49,21 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	http.Error(w, "Not found", http.StatusNotFound)
 }
 
+func normalizeSearchText(text string) string {
+	// Convert to lowercase
+	text = strings.ToLower(text)
+	// Remove apostrophes and special characters
+	text = strings.Map(func(r rune) rune {
+		if r == '\'' || r == '"' || r == '.' || r == ',' {
+			return -1 // Remove the character
+		}
+		return r
+	}, text)
+	// Replace multiple spaces with single space and trim
+	text = strings.Join(strings.Fields(text), " ")
+	return text
+}
+
 func searchVideos(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("HX-Request") != "" {
 		w.Header().Set("Content-Type", "text/html")
@@ -55,6 +71,9 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 	}
 	query := r.URL.Query().Get("search")
+	if query != "" {
+		query = normalizeSearchText(query)
+	}
 	db := sqlite.Open("default")
 	defer db.Close()
 
@@ -67,8 +86,10 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 	var rows *sql.Rows
 	var err error
 	if query != "" {
-		sqlQuery += " WHERE v.title LIKE ?"
-		rows, err = db.Query(sqlQuery, "%"+query+"%")
+		// Create search pattern with wildcards between words
+		searchPattern := "%" + strings.Join(strings.Fields(query), "%") + "%"
+		sqlQuery += ` WHERE LOWER(REPLACE(REPLACE(v.title, "'", ""), '"', "")) LIKE ?`
+		rows, err = db.Query(sqlQuery, searchPattern)
 	} else {
 		rows, err = db.Query(sqlQuery)
 	}

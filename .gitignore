@@ -1,2 +1,7 @@
 main.wasm
 .spin/
+.DS_Store
+.env
+.env.local
+.vscode
+
