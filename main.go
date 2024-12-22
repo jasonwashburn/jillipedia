@@ -203,7 +203,7 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 		var html string
 		for _, video := range videos {
 			html += fmt.Sprintf(`
-				<a href="%s" style="text-decoration: none; color: inherit;" 
+				<a href="%s&t=0" style="text-decoration: none; color: inherit;" 
 				   onclick="fetch('/track-click?id=%s', {method: 'POST'}); return true;">
 					<div class="video-item" id="video-%s">
 						<img src="%s" width="%d" height="%d">
