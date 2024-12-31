@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <title>Jillipedia</title>
     
     <!-- Favicon -->
@@ -30,21 +31,21 @@
         }
     </script>
 </head>
-<body class="bg-gray-100 p-4 md:p-6 font-sans antialiased leading-relaxed">
+<body class="bg-gray-100 dark:bg-gray-900 p-4 md:p-6 font-sans antialiased leading-relaxed">
     <div class="max-w-3xl mx-auto">
-        <div class="sticky top-0 bg-gray-100 py-4 mb-4 z-50 flex gap-2">
+        <div class="sticky top-0 bg-gray-100 dark:bg-gray-900 py-4 mb-4 z-50 flex gap-2">
             <input type="search" 
                    id="search-input"
                    name="search" 
                    placeholder="Search videos..."
-                   class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 appearance-none flex-1"
+                   class="w-full px-4 py-3 text-lg border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 appearance-none flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                    hx-get="/videos" 
                    hx-trigger="input changed delay:500ms, load" 
                    hx-target="#results">
             <button onclick="clearSearch()" 
-                    class="p-2 border-2 border-gray-300 rounded-lg bg-white hover:border-blue-500 hover:bg-gray-50 transition-colors w-[46px] h-[46px] flex items-center justify-center"
+                    class="p-2 border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-[46px] h-[46px] flex items-center justify-center"
                     title="Clear search">
-                <img src="/static/reload_icon.svg" width="16" height="16" alt="Clear" class="opacity-60 hover:opacity-80 transition-opacity">
+                <img src="/static/reload_icon.svg" width="16" height="16" alt="Clear" class="opacity-60 hover:opacity-80 transition-opacity dark:invert">
             </button>
         </div>
         <div id="results"></div>

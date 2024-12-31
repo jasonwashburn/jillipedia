@@ -205,13 +205,13 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 			html += fmt.Sprintf(`
 				<a href="%s&t=0" class="block text-inherit no-underline" 
 				   onclick="fetch('/track-click?id=%s', {method: 'POST'}); return true;">
-					<div class="bg-white p-4 mb-4 rounded-xl shadow-sm hover:shadow transition-transform active:scale-[0.98] flex gap-4 items-center" id="video-%s">
+					<div class="bg-white dark:bg-gray-800 p-4 mb-4 rounded-xl shadow-sm hover:shadow transition-transform active:scale-[0.98] flex gap-4 items-center" id="video-%s">
 						<img src="%s" width="%d" height="%d" class="w-[120px] md:w-[120px] object-contain rounded-lg flex-shrink-0">
 						<div class="flex-1 min-w-0">
-							<h3 class="m-0 mb-2 text-lg text-gray-800">%s</h3>
-							<p class="m-0 mb-2 text-gray-600 text-[0.95rem]">%s</p>
-							<p class="text-gray-500 text-sm mt-2">Season %d, Episode %d</p>
-							<p class="text-gray-400 text-xs mt-2">%d views in the last 30 days</p>
+							<h3 class="m-0 mb-2 text-lg text-gray-800 dark:text-gray-100">%s</h3>
+							<p class="m-0 mb-2 text-gray-600 dark:text-gray-300 text-[0.95rem]">%s</p>
+							<p class="text-gray-500 dark:text-gray-400 text-sm mt-2">Season %d, Episode %d</p>
+							<p class="text-gray-400 dark:text-gray-500 text-xs mt-2">%d views in the last 30 days</p>
 						</div>
 					</div>
 				</a>`,
