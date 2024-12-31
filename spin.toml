@@ -15,8 +15,11 @@ source = "main.wasm"
 allowed_outbound_hosts = []
 sqlite_databases = ["default"]
 [component.jillipedia.build]
-command = "tinygo build -target=wasi -gc=leaking -no-debug -o main.wasm main.go"
-watch = ["**/*.go", "go.mod"]
+command = """
+npx tailwindcss -i src/styles/input.css -o static/output.css &&
+tinygo build -target=wasi -gc=leaking -no-debug -o main.wasm main.go
+"""
+watch = ["**/*.go", "go.mod", "src/styles/**/*.css"]
 [component.jillipedia.environment]
 LOG_LEVEL = "INFO"
 
