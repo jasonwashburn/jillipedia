@@ -17,8 +17,9 @@
     <!-- Android home screen icon -->
     <link rel="manifest" href="/static/site.webmanifest">
     
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <link rel="stylesheet" href="/static/styles.css">
     <script>
         function clearSearch() {
             const input = document.getElementById('search-input');
@@ -27,18 +28,21 @@
         }
     </script>
 </head>
-<body>
-    <div class="container">
-        <div class="search-container">
+<body class="bg-gray-100 p-4 md:p-6 font-sans antialiased leading-relaxed">
+    <div class="max-w-3xl mx-auto">
+        <div class="sticky top-0 bg-gray-100 py-4 mb-4 z-50 flex gap-2">
             <input type="search" 
                    id="search-input"
                    name="search" 
                    placeholder="Search videos..."
+                   class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 appearance-none flex-1"
                    hx-get="/videos" 
                    hx-trigger="input changed delay:500ms, load" 
                    hx-target="#results">
-            <button onclick="clearSearch()" class="clear-button" title="Clear search">
-                <img src="/static/reload_icon.svg" width="16" height="16" alt="Clear">
+            <button onclick="clearSearch()" 
+                    class="p-2 border-2 border-gray-300 rounded-lg bg-white hover:border-blue-500 hover:bg-gray-50 transition-colors w-[46px] h-[46px] flex items-center justify-center"
+                    title="Clear search">
+                <img src="/static/reload_icon.svg" width="16" height="16" alt="Clear" class="opacity-60 hover:opacity-80 transition-opacity">
             </button>
         </div>
         <div id="results"></div>

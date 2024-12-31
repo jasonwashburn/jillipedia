@@ -203,15 +203,15 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 		var html string
 		for _, video := range videos {
 			html += fmt.Sprintf(`
-				<a href="%s&t=0" style="text-decoration: none; color: inherit;" 
+				<a href="%s&t=0" class="block text-inherit no-underline" 
 				   onclick="fetch('/track-click?id=%s', {method: 'POST'}); return true;">
-					<div class="video-item" id="video-%s">
-						<img src="%s" width="%d" height="%d">
-						<div class="content">
-							<h3>%s</h3>
-							<p>%s</p>
-							<p class="episode-info">Season %d, Episode %d</p>
-							<p class="click-count">%d views in the last 30 days</p>
+					<div class="bg-white p-4 mb-4 rounded-xl shadow-sm hover:shadow transition-transform active:scale-[0.98] flex gap-4 items-center" id="video-%s">
+						<img src="%s" width="%d" height="%d" class="w-[120px] md:w-[120px] object-contain rounded-lg flex-shrink-0">
+						<div class="flex-1 min-w-0">
+							<h3 class="m-0 mb-2 text-lg text-gray-800">%s</h3>
+							<p class="m-0 mb-2 text-gray-600 text-[0.95rem]">%s</p>
+							<p class="text-gray-500 text-sm mt-2">Season %d, Episode %d</p>
+							<p class="text-gray-400 text-xs mt-2">%d views in the last 30 days</p>
 						</div>
 					</div>
 				</a>`,
