@@ -228,12 +228,13 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 				video.ClickCount)
 		}
 		fmt.Fprint(w, html)
-		return
+	} else {
+		json.NewEncoder(w).Encode(videos)
 	}
 
-	json.NewEncoder(w).Encode(videos)
 	duration := time.Since(start)
 	loggers.Infof("Search completed in %v, returned %d results", duration, len(videos))
+	return
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
