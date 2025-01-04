@@ -166,6 +166,7 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 		LEFT JOIN clicks c ON v.id = c.video_id AND c.clicked_at > datetime('now', '-30 days')
 		GROUP BY v.id`
 
+	dbQueryStart := time.Now()
 	var rows *sql.Rows
 	var err error
 	if query != "" {
@@ -178,6 +179,9 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 		sqlQuery += ` ORDER BY click_count DESC LIMIT 25`
 		rows, err = db.Query(sqlQuery)
 	}
+	dbQueryDuration := time.Since(dbQueryStart)
+	loggers.Debugf("(%s) Database query took %v", requestID, dbQueryDuration)
+
 	if err != nil {
 		loggers.Errorf("(%s) Database error during search: %v", requestID, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -239,7 +243,8 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	duration := time.Since(start)
-	loggers.Infof("(%s) Search completed in %v, returned %d results", requestID, duration, len(videos))
+	loggers.Infof("(%s) Search completed in %v (DB query: %v), returned %d results", 
+		requestID, duration, dbQueryDuration, len(videos))
 	return
 }
 
