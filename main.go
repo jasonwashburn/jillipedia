@@ -12,6 +12,7 @@ import (
 
 	spinhttp "github.com/fermyon/spin/sdk/go/v2/http"
 	"github.com/fermyon/spin/sdk/go/v2/sqlite"
+	"github.com/google/uuid"
 )
 
 type Video struct {
@@ -128,6 +129,10 @@ func (l AppLoggers) Errorf(format string, v ...interface{}) {
 	}
 }
 
+func generateRequestID() string {
+	return uuid.NewString()
+}
+
 func init() {
 	router := NewRouter()
 	router.Handle("/", indexHandler)
@@ -138,14 +143,15 @@ func init() {
 }
 
 func searchVideos(w http.ResponseWriter, r *http.Request) {
+	requestID := generateRequestID()
 	loggers := newLoggers()
 	start := time.Now()
 
 	query := r.URL.Query().Get("search")
 	if query != "" {
-		loggers.Infof("Search request from %s with query: %q", r.RemoteAddr, query)
+		loggers.Infof("(%s) Search request from %s with query: %q", requestID, r.RemoteAddr, query)
 		query = normalizeSearchText(query)
-		loggers.Debugf("Normalized search query: %q", query)
+		loggers.Debugf("(%s) Normalized search query: %q", requestID, query)
 	}
 
 	db := sqlite.Open("default")
@@ -173,7 +179,7 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 		rows, err = db.Query(sqlQuery)
 	}
 	if err != nil {
-		loggers.Errorf("Database error during search: %v", err)
+		loggers.Errorf("(%s) Database error during search: %v", requestID, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -233,7 +239,7 @@ func searchVideos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	duration := time.Since(start)
-	loggers.Infof("Search completed in %v, returned %d results", duration, len(videos))
+	loggers.Infof("(%s) Search completed in %v, returned %d results", requestID, duration, len(videos))
 	return
 }
 
@@ -242,17 +248,18 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func trackClick(w http.ResponseWriter, r *http.Request) {
+	requestID := generateRequestID()
 	loggers := newLoggers()
 
 	if r.Method != "POST" {
-		loggers.Errorf("Invalid method %s from %s", r.Method, r.RemoteAddr)
+		loggers.Errorf("(%s) Invalid method %s from %s", requestID, r.Method, r.RemoteAddr)
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	videoId := r.URL.Query().Get("id")
 	if videoId == "" {
-		loggers.Errorf("Missing video ID in request from %s", r.RemoteAddr)
+		loggers.Errorf("(%s) Missing video ID in request from %s", requestID, r.RemoteAddr)
 		http.Error(w, "Video ID required", http.StatusBadRequest)
 		return
 	}
@@ -264,21 +271,21 @@ func trackClick(w http.ResponseWriter, r *http.Request) {
 	var title string
 	err := db.QueryRow("SELECT title FROM videos WHERE id = ?", videoId).Scan(&title)
 	if err != nil {
-		loggers.Errorf("Error getting video title for ID %s: %v", videoId, err)
+		loggers.Errorf("(%s) Error getting video title for ID %s: %v", requestID, videoId, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	loggers.Infof("Click tracked for video %s (%s) from %s", title, videoId, r.RemoteAddr)
+	loggers.Infof("(%s) Click tracked for video %s (%s) from %s", requestID, title, videoId, r.RemoteAddr)
 
 	_, err = db.Exec("INSERT INTO clicks (video_id) VALUES (?)", videoId)
 	if err != nil {
-		loggers.Errorf("Database error tracking click for video %s (%s): %v", title, videoId, err)
+		loggers.Errorf("(%s) Database error tracking click for video %s (%s): %v", requestID, title, videoId, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	loggers.Debugf("Successfully recorded click for video %s (%s) in database", title, videoId)
+	loggers.Debugf("(%s) Successfully recorded click for video %s (%s) in database", requestID, title, videoId)
 }
 
 func main() {}
