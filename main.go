@@ -291,6 +291,18 @@ func trackClick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	loggers.Debugf("(%s) Successfully recorded click for video %s (%s) in database", requestID, title, videoId)
+
+	// Clean up old clicks (older than 30 days) to prevent unbounded growth
+	result, err := db.Exec("DELETE FROM clicks WHERE clicked_at < datetime('now', '-30 days')")
+	if err != nil {
+		// Log the error but don't fail the request - click was already recorded
+		loggers.Errorf("(%s) Error cleaning up old clicks: %v", requestID, err)
+	} else {
+		rowsAffected, _ := result.RowsAffected()
+		if rowsAffected > 0 {
+			loggers.Debugf("(%s) Cleaned up %d old clicks", requestID, rowsAffected)
+		}
+	}
 }
 
 func main() {}
