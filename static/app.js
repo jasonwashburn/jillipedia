@@ -20,6 +20,25 @@ function normalizeSearchText(text) {
 }
 
 /**
+ * Check if all query tokens appear in order in the title (with gaps allowed)
+ * Matches SQL LIKE '%token1%token2%' behavior from the old Go backend
+ */
+function matchesTokens(title, query) {
+  const titleNormalized = normalizeSearchText(title);
+  const tokens = normalizeSearchText(query).split(/\s+/).filter(t => t);
+
+  if (tokens.length === 0) return true;
+
+  let position = 0;
+  for (const token of tokens) {
+    const index = titleNormalized.indexOf(token, position);
+    if (index === -1) return false;  // Token not found
+    position = index + token.length;  // Move past this token
+  }
+  return true;  // All tokens found in order
+}
+
+/**
  * Get click count for a video from localStorage
  * Returns 0 if localStorage is unavailable (private mode, etc.)
  */
@@ -51,6 +70,7 @@ function trackClick(videoId, videoTitle) {
 
 /**
  * Search videos by query string
+ * Uses token-based matching (matches SQL LIKE '%token1%token2%' behavior)
  */
 function searchVideos(query) {
   if (!query || query.trim() === '') {
@@ -60,10 +80,8 @@ function searchVideos(query) {
       .slice(0, 25);
   }
 
-  const normalizedQuery = normalizeSearchText(query);
-
   return allVideos
-    .filter(video => normalizeSearchText(video.title).includes(normalizedQuery))
+    .filter(video => matchesTokens(video.title, query))
     .sort((a, b) => getClickCount(b.id) - getClickCount(a.id))
     .slice(0, 25);
 }
