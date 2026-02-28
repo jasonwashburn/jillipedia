@@ -125,7 +125,7 @@ function renderVideos(videos) {
   return videos.map(video => {
     const clickCount = getClickCount(video.id);
     return `
-      <a href="${video.url}&t=0" class="block text-inherit no-underline"
+      <a href="${video.url}" class="block text-inherit no-underline"
          onclick="trackClick('${video.id}', '${video.title.replace(/'/g, "\\'")}'); return true;">
         <div class="bg-white dark:bg-gray-800 p-4 mb-4 rounded-xl shadow-sm hover:shadow transition-transform active:scale-[0.98] flex gap-4 items-center" id="video-${video.id}">
           <img src="${video.thumbnail.url}" alt="${video.title}" width="${video.thumbnail.width}" height="${video.thumbnail.height}" loading="lazy" class="w-[120px] md:w-[120px] object-contain rounded-lg flex-shrink-0">
