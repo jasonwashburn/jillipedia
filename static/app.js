@@ -16,6 +16,7 @@ function normalizeSearchText(text) {
     .toLowerCase()
     .replace(/['".]/g, '')  // Remove apostrophes, quotes, periods
     .replace(/,/g, '')      // Remove commas
+    .replace(/-/g, ' ')     // Replace hyphens with spaces
     .replace(/\s+/g, ' ')   // Collapse multiple spaces
     .trim();
 }
@@ -89,8 +90,9 @@ function searchVideos(query) {
       .slice(0, 25);
   }
 
-  // Use Fuse.js for fuzzy search
-  const results = fuse.search(query);
+  // Use Fuse.js for fuzzy search (normalize query for consistency)
+  const normalizedQuery = normalizeSearchText(query);
+  const results = fuse.search(normalizedQuery);
   return results
     .map(result => result.item)  // Extract video objects
     .sort((a, b) => getClickCount(b.id) - getClickCount(a.id))  // Sort by popularity
@@ -163,7 +165,10 @@ async function loadVideos() {
 
     // Initialize Fuse.js for fuzzy search
     fuse = new Fuse(allVideos, {
-      keys: ['title'],           // Search in title field
+      keys: [{
+        name: 'title',
+        getFn: (video) => normalizeSearchText(video.title)  // Normalize titles for search
+      }],
       threshold: 0.3,            // 0 = exact match, 1 = match anything
       ignoreLocation: true,      // Don't penalize matches far from start
       minMatchCharLength: 2,     // Minimum characters to trigger match
