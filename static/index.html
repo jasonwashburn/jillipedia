@@ -13,48 +13,50 @@
     <title>Jillipedia</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
-    
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+
     <!-- iOS home screen icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Jillipedia">
-    
-    <!-- Android home screen icon -->
-    <link rel="manifest" href="/static/site.webmanifest">
-    
-    <!-- Tailwind CSS -->
-    <link href="/static/output.css" rel="stylesheet">
 
-    <!-- HTMX CDN -->
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <!-- Android home screen icon -->
+    <link rel="manifest" href="./site.webmanifest">
+
+    <!-- Tailwind CSS -->
+    <link href="./output.css" rel="stylesheet">
+
+    <!-- Fuse.js for fuzzy search -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.1.0/dist/fuse.min.js"></script>
+
+    <!-- Jillipedia App -->
+    <script src="./app.js" defer></script>
     <script>
         function clearSearch() {
             const input = document.getElementById('search-input');
             input.value = '';
             input.dispatchEvent(new Event('input'));
+            input.focus();
         }
     </script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 p-4 md:p-6 font-sans antialiased leading-relaxed">
     <div class="max-w-3xl mx-auto">
         <div class="sticky top-0 bg-gray-100 dark:bg-gray-900 py-4 mb-4 z-50 flex gap-2">
-            <input type="search" 
+            <input type="search"
                    id="search-input"
-                   name="search" 
+                   name="search"
                    placeholder="Search videos..."
                    class="w-full px-4 py-3 text-lg border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 appearance-none flex-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                   hx-get="/videos" 
-                   hx-trigger="input changed delay:500ms, load" 
-                   hx-target="#results">
-            <button onclick="clearSearch()" 
+                   autocomplete="off">
+            <button onclick="clearSearch()"
                     class="p-2 border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-[46px] h-[46px] flex items-center justify-center"
                     title="Clear search">
-                <img src="/static/reload_icon.svg" width="16" height="16" alt="Clear" class="opacity-60 hover:opacity-80 transition-opacity dark:invert">
+                <img src="./reload_icon.svg" width="16" height="16" alt="Clear" class="opacity-60 hover:opacity-80 transition-opacity dark:invert">
             </button>
         </div>
-        <div id="results"></div>
+        <div id="video-results" class="space-y-4"></div>
     </div>
 </body>
 </html>
