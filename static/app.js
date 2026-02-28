@@ -5,6 +5,7 @@
 
 // Global state
 let allVideos = [];
+let fuse = null;
 
 /**
  * Normalize search text by removing special characters and lowercasing
@@ -70,7 +71,7 @@ function trackClick(videoId, videoTitle) {
 
 /**
  * Search videos by query string
- * Uses token-based matching (matches SQL LIKE '%token1%token2%' behavior)
+ * Uses Fuse.js for fuzzy search with typo tolerance
  */
 function searchVideos(query) {
   if (!query || query.trim() === '') {
@@ -80,9 +81,19 @@ function searchVideos(query) {
       .slice(0, 25);
   }
 
-  return allVideos
-    .filter(video => matchesTokens(video.title, query))
-    .sort((a, b) => getClickCount(b.id) - getClickCount(a.id))
+  if (!fuse) {
+    // Fallback to token matching if Fuse isn't loaded yet
+    return allVideos
+      .filter(video => matchesTokens(video.title, query))
+      .sort((a, b) => getClickCount(b.id) - getClickCount(a.id))
+      .slice(0, 25);
+  }
+
+  // Use Fuse.js for fuzzy search
+  const results = fuse.search(query);
+  return results
+    .map(result => result.item)  // Extract video objects
+    .sort((a, b) => getClickCount(b.id) - getClickCount(a.id))  // Sort by popularity
     .slice(0, 25);
 }
 
@@ -149,6 +160,16 @@ async function loadVideos() {
     }
     allVideos = await response.json();
     console.log(`Loaded ${allVideos.length} videos`);
+
+    // Initialize Fuse.js for fuzzy search
+    fuse = new Fuse(allVideos, {
+      keys: ['title'],           // Search in title field
+      threshold: 0.3,            // 0 = exact match, 1 = match anything
+      ignoreLocation: true,      // Don't penalize matches far from start
+      minMatchCharLength: 2,     // Minimum characters to trigger match
+      distance: 100              // Max distance for character differences
+    });
+    console.log('Fuse.js fuzzy search initialized');
 
     // Render initial results (all videos, sorted by clicks)
     const results = searchVideos('');
