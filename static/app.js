@@ -93,9 +93,16 @@ function searchVideos(query) {
   // Use Fuse.js for fuzzy search (normalize query for consistency)
   const normalizedQuery = normalizeSearchText(query);
   const results = fuse.search(normalizedQuery);
+
+  // Sort by relevance (Fuse score) first, then by click count for tiebreakers
   return results
+    .sort((a, b) => {
+      // Lower score = better match in Fuse
+      if (a.score !== b.score) return a.score - b.score;
+      // Tiebreaker: higher clicks wins
+      return getClickCount(b.item.id) - getClickCount(a.item.id);
+    })
     .map(result => result.item)  // Extract video objects
-    .sort((a, b) => getClickCount(b.id) - getClickCount(a.id))  // Sort by popularity
     .slice(0, 25);
 }
 
