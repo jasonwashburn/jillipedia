@@ -21,19 +21,32 @@ function normalizeSearchText(text) {
 
 /**
  * Get click count for a video from localStorage
+ * Returns 0 if localStorage is unavailable (private mode, etc.)
  */
 function getClickCount(videoId) {
-  const count = localStorage.getItem(`jillipedia_click_${videoId}`);
-  return parseInt(count || '0', 10);
+  try {
+    const count = localStorage.getItem(`jillipedia_click_${videoId}`);
+    return parseInt(count || '0', 10);
+  } catch (error) {
+    // localStorage unavailable (private mode, disabled, etc.)
+    return 0;
+  }
 }
 
 /**
  * Track a click on a video
+ * Fails silently if localStorage is unavailable
  */
 function trackClick(videoId, videoTitle) {
-  const count = getClickCount(videoId) + 1;
-  localStorage.setItem(`jillipedia_click_${videoId}`, count.toString());
-  console.log(`Tracked click for "${videoTitle}" (${videoId}): ${count} total clicks`);
+  try {
+    const count = getClickCount(videoId) + 1;
+    localStorage.setItem(`jillipedia_click_${videoId}`, count.toString());
+    console.log(`Tracked click for "${videoTitle}" (${videoId}): ${count} total clicks`);
+  } catch (error) {
+    // localStorage unavailable (quota exceeded, private mode, etc.)
+    // Fail silently - click tracking is non-critical
+    console.warn('Failed to track click:', error.message);
+  }
 }
 
 /**
@@ -74,12 +87,12 @@ function renderVideos(videos) {
       <a href="${video.url}&t=0" class="block text-inherit no-underline"
          onclick="trackClick('${video.id}', '${video.title.replace(/'/g, "\\'")}'); return true;">
         <div class="bg-white dark:bg-gray-800 p-4 mb-4 rounded-xl shadow-sm hover:shadow transition-transform active:scale-[0.98] flex gap-4 items-center" id="video-${video.id}">
-          <img src="${video.thumbnail.url}" width="${video.thumbnail.width}" height="${video.thumbnail.height}" class="w-[120px] md:w-[120px] object-contain rounded-lg flex-shrink-0">
+          <img src="${video.thumbnail.url}" alt="${video.title}" width="${video.thumbnail.width}" height="${video.thumbnail.height}" loading="lazy" class="w-[120px] md:w-[120px] object-contain rounded-lg flex-shrink-0">
           <div class="flex-1 min-w-0">
             <h3 class="m-0 mb-2 text-lg text-gray-800 dark:text-gray-100">${video.title}</h3>
             <p class="m-0 mb-2 text-gray-600 dark:text-gray-300 text-[0.95rem]">${video.description}</p>
             <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">Season ${video.season}, Episode ${video.episode}</p>
-            <p class="text-gray-400 dark:text-gray-500 text-xs mt-2">${clickCount} views in the last 30 days</p>
+            <p class="text-gray-400 dark:text-gray-500 text-xs mt-2">${clickCount} views on this device</p>
           </div>
         </div>
       </a>

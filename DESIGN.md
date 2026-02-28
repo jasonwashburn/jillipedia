@@ -78,7 +78,7 @@ User clicks video
     ↓
 Track click in localStorage
     ↓
-Open YouTube in new tab
+Navigate to YouTube (opens in app on mobile)
 ```
 
 ## Data Schema
@@ -162,7 +162,7 @@ Each video card includes:
 - Episode title (large, bold)
 - Description text
 - Season and episode number
-- Click count ("X views in the last 30 days")
+- Click count ("X views on this device")
 - Hover and active states for interactivity
 
 ### Performance Optimizations

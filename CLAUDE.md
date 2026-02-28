@@ -29,12 +29,18 @@ npx serve static
 ```
 
 ### Deployment
+
+**GitHub Pages (Automatic via Actions):**
+- Configured in `.github/workflows/deploy.yml`
+- Deploys automatically on push to `main` branch
+- Enable in repo Settings → Pages → Source: "GitHub Actions"
+- Site URL: `https://jasonwashburn.github.io/jillipedia/`
+
+**Other hosting options:**
 ```bash
-# Deploy the static/ folder to any static hosting:
-# - GitHub Pages: Push static/ contents to gh-pages branch
-# - Netlify: Drag and drop the static/ folder
-# - Vercel: Deploy the static/ directory
-# - Any CDN or web server
+# Netlify: Drag and drop the static/ folder
+# Vercel: Deploy the static/ directory
+# Any CDN or web server: Copy static/ contents to web root
 ```
 
 ### CSS Development (if needed)
