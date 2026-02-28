@@ -72,7 +72,7 @@ function trackClick(videoId, videoTitle) {
 
 /**
  * Search videos by query string
- * Uses Fuse.js for fuzzy search with typo tolerance
+ * Uses Fuse.js for both exact and fuzzy matching
  */
 function searchVideos(query) {
   if (!query || query.trim() === '') {
@@ -83,16 +83,19 @@ function searchVideos(query) {
   }
 
   if (!fuse) {
-    // Fallback to token matching if Fuse isn't loaded yet
-    return allVideos
-      .filter(video => matchesTokens(video.title, query))
-      .sort((a, b) => getClickCount(b.id) - getClickCount(a.id))
-      .slice(0, 25);
+    // Fuse not loaded - return all videos
+    console.warn('Fuse.js not loaded, returning all videos');
+    return allVideos.slice(0, 25);
   }
 
-  // Use Fuse.js for fuzzy search (normalize query for consistency)
-  const normalizedQuery = normalizeSearchText(query);
-  const results = fuse.search(normalizedQuery);
+  // Use Fuse for all searching (handles both exact and fuzzy)
+  const results = fuse.search(query);
+
+  // Debug: log top results with scores
+  console.log(`Search results for: "${query}"`);
+  results.slice(0, 5).forEach(r => {
+    console.log(`  ${r.item.title}: score=${r.score.toFixed(3)}, clicks=${getClickCount(r.item.id)}`);
+  });
 
   // Sort by relevance (Fuse score) first, then by click count for tiebreakers
   return results
@@ -170,16 +173,15 @@ async function loadVideos() {
     allVideos = await response.json();
     console.log(`Loaded ${allVideos.length} videos`);
 
-    // Initialize Fuse.js for fuzzy search
+    // Initialize Fuse.js for fuzzy search (works on raw titles)
     fuse = new Fuse(allVideos, {
-      keys: [{
-        name: 'title',
-        getFn: (video) => normalizeSearchText(video.title)  // Normalize titles for search
-      }],
-      threshold: 0.3,            // 0 = exact match, 1 = match anything
+      keys: ['title'],           // Search raw title (no normalization)
+      includeScore: true,        // Return relevance scores for sorting
+      threshold: 0.4,            // Allow moderate fuzziness (0.0=exact, 1.0=anything)
       ignoreLocation: true,      // Don't penalize matches far from start
       minMatchCharLength: 2,     // Minimum characters to trigger match
-      distance: 100              // Max distance for character differences
+      distance: 100,             // Max distance for character differences
+      ignoreCase: true           // Case-insensitive (default, but explicit)
     });
     console.log('Fuse.js fuzzy search initialized');
 
